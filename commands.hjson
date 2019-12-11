@@ -1,0 +1,533 @@
+{
+  11:
+  {
+    cmd_name: send alarm
+    arg_name: 8 bytes from C2442a
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  12:
+  {
+    cmd_name: send user info
+    arg_name: height, weight, age, gender
+    arg_pack: BBBB
+    response_unpack: null
+    tested_and_working: false
+  }
+  14:
+  {
+    cmd_name: send dominant hand
+    arg_name: hand
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  15:
+  {
+    cmd_name: send display device function
+    arg_name: null terminated list of bytes
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  16:
+  {
+    cmd_name: send goal step
+    arg_name: integer
+    arg_pack: I
+    response_unpack: null
+    tested_and_working: true
+  }
+  17:
+  {
+    cmd_name: send time system
+    arg_name: byte
+    arg_pack: B
+    response_unpack: null
+    tested_and_working: false
+  }
+  18:
+  {
+    cmd_name: send quick view
+    arg_name: bool (0=off, 1=on)
+    arg_pack: B
+    response_unpack: null
+    tested_and_working: true
+  }
+  19:
+  {
+    cmd_name: send display watchface
+    arg_name: 1-based index of watch face to use
+    arg_pack: B
+    response_unpack: null
+    help: Set the watch face to use. 1, 2 or 3
+    tested_and_working: true
+  }
+  1a:
+  {
+    cmd_name: send metric system
+    arg_name: byte
+    arg_pack: B
+    response_unpack: null
+    tested_and_working: false
+  }
+  1b:
+  {
+    cmd_name: send device language
+    arg_name: byte
+    arg_pack: B
+    response_unpack: null
+    tested_and_working: false
+  }
+  1c:
+  {
+    cmd_name: send other message
+    arg_name: bool (0=off, 1=on)
+    arg_pack: B
+    response_unpack: null
+    tested_and_working: false
+  }
+  1d:
+  {
+    cmd_name: send sedentary reminder
+    arg_name: bool (0=off, 1=on)
+    arg_pack: B
+    response_unpack: null
+    help: Enable or disable the sedentary reminder
+    tested_and_working: false
+  }
+  1e:
+  {
+    cmd_name: send device version
+    arg_name: byte
+    arg_pack: B
+    response_unpack: null
+    tested_and_working: false
+  }
+  1f:
+  {
+    cmd_name: timing measure heart rate
+    arg_name: byte
+    arg_pack: B
+    response_unpack: null
+    tested_and_working: false
+  }
+  21:
+  {
+    cmd_name: query all alarms
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  24:
+  {
+    cmd_name: query dominant hand
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  25:
+  {
+    cmd_name: query device function support
+    arg_name: 0xff
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  26:
+  {
+    cmd_name: query goal step
+    arg_name: null
+    arg_pack: null
+    response_unpack: I
+    tested_and_working: true
+  }
+  27:
+  {
+    cmd_name: query time system
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  28:
+  {
+    cmd_name: query quick view
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  29:
+  {
+    cmd_name: query watchface
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  2a:
+  {
+    cmd_name: query metric system
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  2b:
+  {
+    cmd_name: query device language
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  2c:
+  {
+    cmd_name: query other message
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  2d:
+  {
+    cmd_name: query sedentary reminder
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  2e:
+  {
+    cmd_name: query device version
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  2f:
+  {
+    cmd_name: query timing measure heart rate
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  31:
+  {
+    cmd_name: sync time
+    arg_name: 4 bytes timestamp, 0x08
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  32:
+  {
+    cmd_name: sync sleep
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  33:
+  {
+    cmd_name: sync past sleep
+    arg_name: byte
+    arg_pack: B
+    response_unpack: null
+    tested_and_working: false
+  }
+  34:
+  {
+    cmd_name: query last dynamic rate
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  35:
+  {
+    cmd_name: query heart rate
+    arg_name: byte
+    arg_pack: B
+    response_unpack: null
+    tested_and_working: false
+  }
+  36:
+  {
+    cmd_name: query heart rate
+    arg_name: byte
+    arg_pack: B
+    response_unpack: null
+    tested_and_working: false
+  }
+  37:
+  {
+    cmd_name: query movement heart rate
+    arg_name: ???
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  38:
+  {
+    cmd_name: send watchface layout
+    arg_name: 37 bytes from C2438E
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  39:
+  {
+    cmd_name: query watchface layout
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  3a:
+  {
+    cmd_name: query sleep action
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  41:
+  {
+    cmd_name: send message
+    arg_name: length, utf8 str
+    arg_pack: null
+    response_unpack: null
+    help: Use send_message(), a wrapper around this method which takes a string to send.
+    tested_and_working: true
+  }
+  42:
+  {
+    cmd_name: send future weather
+    arg_name: 21 bytes from C2439F
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  43:
+  {
+    cmd_name: send today weather
+    arg_name: variable length from C2439F
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  51:
+  {
+    cmd_name: shutdown
+    arg_name: 255
+    arg_pack: B
+    response_unpack: null
+    tested_and_working: false
+  }
+  52:
+  {
+    cmd_name: send calibrate gsensor
+    arg_name: ""
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  54:
+  {
+    cmd_name: send step length
+    arg_name: byte
+    arg_pack: B
+    response_unpack: null
+    tested_and_working: false
+  }
+  59:
+  {
+    cmd_name: query steps category
+    arg_name: byte
+    arg_pack: B
+    response_unpack: null
+    tested_and_working: false
+  }
+  61:
+  {
+    cmd_name: find device
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: true
+  }
+  63:
+  {
+    cmd_name: abort firmware upgrade
+    arg_name: 0xff, 0xff, 0xff, 0xff
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  66:
+  {
+    cmd_name: switch camera view
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  68:
+  {
+    cmd_name: unknown
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  69:
+  {
+    cmd_name: stop measure blood pressure
+    arg_name: 0xff, 0xff, 0xff
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  6b:
+  {
+    cmd_name: stop measure blood oxygen
+    arg_name: 0xff
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  6c:
+  {
+    cmd_name: ui file transfer
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  6d:
+  {
+    cmd_name: unknown
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  6e:
+  {
+    cmd_name: start watchface upload?
+    arg_name: uint32
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  6f:
+  {
+    cmd_name: ecg heart rate command
+    arg_name: cmd
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  71:
+  {
+    cmd_name: send dnt
+    arg_name: hour from, min from, hour to, min to
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  72:
+  {
+    cmd_name: send quick view time
+    arg_name: hour from, min from, hour to, min to
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  73:
+  {
+    cmd_name: send reminder to move
+    arg_name: period, steps, start hour, end hour
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  74:
+  {
+    cmd_name: start watchface file transfer
+    arg_name: uint32 size
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  75:
+  {
+    cmd_name: set physiological period reminder
+    arg_name: 14 bytes
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  78:
+  {
+    cmd_name: send breathing light?
+    arg_name: on
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  81:
+  {
+    cmd_name: query dnd time
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  82:
+  {
+    cmd_name: query quick view time
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  83:
+  {
+    cmd_name: query reminder to move
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  84:
+  {
+    cmd_name: query support watchface
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  85:
+  {
+    cmd_name: query physiological period
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+  88:
+  {
+    cmd_name: query breathing light?
+    arg_name: null
+    arg_pack: null
+    response_unpack: null
+    tested_and_working: false
+  }
+}
