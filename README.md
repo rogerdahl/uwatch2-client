@@ -1,27 +1,32 @@
-### Python client for UMIDIGI Uwatch2 Smart Watch
+#### Linux client for the UMIDIGI Uwatch2 smart watch (Python)
 
-> **For reference only, not usable at this time.**
+> **NOTE**: 
+>
+> For reference only. Not usable at this time.
+>
+> For Linux only.
 
-> **For Linux only.**
+Based on [reverse engineering of the protocol by @kabbi](https://gist.github.com/kabbi/854a541c1a32e15fb0dfa3338f4ee4a9).
 
-Based on reverse engineering of the protocol by @kabbi
-https://gist.github.com/kabbi/854a541c1a32e15fb0dfa3338f4ee4a9
-
-#### Dependencies
+##### Dependencies
 
 ```bash
-$ pip install pygatt pexpect hjson
+$ pip install pygatt pexpect hjson blessed
 ```
 
-#### Setup
+##### Setup
 
 Change `UWATCH2_MAC` in the script to match the MAC address of your watch. Get the MAC address with long tap on the main watch face screen.
 
-#### Examples
+##### Examples
 
 Use the `--debug` command line switch to get details on the protocol.
 
-##### To use the interactive mode, start the script without command line arguments, then type at the prompt.
+###### Interactive mode
+
+Start the script without passing a command:
+
+    $ ./uwatch2.py --debug
 
 To get a list of the commands:
 
@@ -37,9 +42,16 @@ To set the number of steps for the daily goal to `12000`:
 
     > 16 12000
 
-##### To issue a single command then exit, pass the command on the command line.
+###### To issue a single command then exit, pass the command on the command line.
 
 To set the number of steps for the daily goal to `12000`:
 
-    > $ ./uwatch.py 16 12000
+    $ ./uwatch.py 16 12000
     
+##### Troubleshooting
+
+- The client does not see the watch:
+
+    - Make sure that the watch is disconnected from the Da Fit app or any other app or device it may be bonded to. The watch will not advertise itself as available unless unbonded. Using the Reset function on the watch itself will not unbond it.
+
+    - Do not set the watch up as a new device in the Bluetooth settings in Linux.
