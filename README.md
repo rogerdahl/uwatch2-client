@@ -24,7 +24,7 @@ If the script is started without a MAC address, a BLE scan is performed to disco
 
     $ ./uwatch.py  
 
-    * If the watch name has been changed from the default of "Uwatch2", use `--name <my-name>` to specify the new name.
+* If the watch name has been changed from the default of "Uwatch2", use `--name <my-name>` to specify the new name.
 
 Use the `--debug` command line switch to get details on the protocol.
 
@@ -66,14 +66,15 @@ To set the number of steps for the daily goal to `12000`:
 
     - Make sure that the watch is removed from the "Da Fit" app or any other app or device it may be bonded to. The watch will not advertise itself as available unless unbonded.
 
-        - In the "Da Fit" watch settings, tap `Remove` (under the battery display) if the watch shows as `connected`. 
+        - In the "Da Fit" watch settings, tap `Remove` (under the battery display) if the watch is listed there. 
+
         - Using the Reset function on the watch itself will not unbond it.
 
     - Do not set the watch up as a new device in the Bluetooth settings in Linux.
 
 - The client crashes:
 
-    - Open the OS Bluetooth manager and, if the watch is visible there, use "Remove device" to remove the device from the "known devices list."
+    - Open the Bluetooth settings in Linux. If the watch is visible there, use "Remove device" to remove the device from the "known devices list."
      
      Apparently, what the Bluetooth stack stores about a device can get corrupted, breaking all further use of the device until the entry is cleared.
 
