@@ -7,7 +7,7 @@ Based on [reverse engineering of the protocol by @kabbi](https://gist.github.com
 ### Dependencies
 
 ```bash
-$ pip install pygatt pexpect hjson blessed pytz tzlocal
+$ pip install pygatt pexpect pytz tzlocal
 ```
 
 ### Usage

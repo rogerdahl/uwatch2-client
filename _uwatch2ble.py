@@ -12,7 +12,6 @@ import shlex
 import struct
 import uuid
 
-import blessed
 import pygatt
 
 log = logging.getLogger(__name__)
@@ -61,7 +60,6 @@ class Uwatch2Ble(object):
             connect_timeout_sec or self.DEFAULT_CONNECT_TIMEOUT_SEC
         )
 
-        self._term = blessed.Terminal()
         self._adapter = pygatt.GATTToolBackend()
         self._device = None
 
