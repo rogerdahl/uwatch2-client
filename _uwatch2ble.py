@@ -95,9 +95,10 @@ class Uwatch2Ble(object):
                 log.debug(f'Calling "{func_name}" on adapter raised {repr(e)}')
             else:
                 log.debug(f'Calling "{func_name}" on adapter completed')
-        f_('stop')
-        f_('reset')
-        f_('kill')
+
+        f_("stop")
+        f_("reset")
+        f_("kill")
 
     def _start(self):
         log.info("Starting...")
@@ -265,7 +266,7 @@ class Uwatch2Ble(object):
 
     def _get_hex_str(self, b):
         # noinspection PyArgumentList
-        return binascii.hexlify(b, ' ').decode("ascii")
+        return binascii.hexlify(b, " ").decode("ascii")
 
     def _get_bytes(self, hex_str):
         try:

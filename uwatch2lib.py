@@ -55,7 +55,7 @@ class Uwatch2(_uwatch2ble.Uwatch2Ble):
         # Send message in 255 - packet_header(4) - string_header(2) = 249 byte chunks
         while True:
             msg1_bytes, msg2_bytes = self._split_utf8(msg_bytes, 255 - 4 - 2)
-            msg1_str = msg1_bytes.decode('utf-8')
+            msg1_str = msg1_bytes.decode("utf-8")
             log.info(f"Sending message: {msg1_str}")
             print(len(msg1_bytes), msg1_bytes)
             self._send_packet(bytes([0x41, len(msg1_bytes)]) + msg1_bytes)
@@ -67,7 +67,7 @@ class Uwatch2(_uwatch2ble.Uwatch2Ble):
         assert isinstance(b, bytes)
         if len(b) <= n:
             return b, None
-        while 0x80 <= b[n] < 0xc0:
+        while 0x80 <= b[n] < 0xC0:
             n -= 1
         return b[:n], b[n:]
 
