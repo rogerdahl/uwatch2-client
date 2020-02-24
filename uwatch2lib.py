@@ -4,6 +4,7 @@ Based on: https://gist.github.com/kabbi/854a541c1a32e15fb0dfa3338f4ee4a9
 """
 import datetime
 import logging
+import pprint
 
 import pytz
 import tzlocal
@@ -15,6 +16,9 @@ log = logging.getLogger(__name__)
 
 WatchError = _uwatch2ble.WatchError
 WatchBleScanError = _uwatch2ble.WatchBleScanError
+
+DAYS_TUP = "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
+# SUN, MON, TUE, WED, THU, FRI, SAT = range(7)
 
 
 class Uwatch2(_uwatch2ble.Uwatch2Ble):
@@ -48,8 +52,24 @@ class Uwatch2(_uwatch2ble.Uwatch2Ble):
         TODO: Have not found out how to display the message type, like "Twitter".
         """
         msg_bytes = msg_str.encode("utf-8")
-        log.info(f"Sending message: {msg_str}")
-        self._send_packet(bytes([0x41, len(msg_bytes)]) + msg_bytes)
+        # Send message in 255 - packet_header(4) - string_header(2) = 249 byte chunks
+        while True:
+            msg1_bytes, msg2_bytes = self._split_utf8(msg_bytes, 255 - 4 - 2)
+            msg1_str = msg1_bytes.decode('utf-8')
+            log.info(f"Sending message: {msg1_str}")
+            print(len(msg1_bytes), msg1_bytes)
+            self._send_packet(bytes([0x41, len(msg1_bytes)]) + msg1_bytes)
+            if msg2_bytes is None:
+                break
+            msg_bytes = msg2_bytes
+
+    def _split_utf8(self, b, n):
+        assert isinstance(b, bytes)
+        if len(b) <= n:
+            return b, None
+        while 0x80 <= b[n] < 0xc0:
+            n -= 1
+        return b[:n], b[n:]
 
     def set_user_info(self, height_cm, weight_kg, age_years, gender_bool):
         """Set user info
@@ -336,82 +356,219 @@ class Uwatch2(_uwatch2ble.Uwatch2Ble):
         See Also:
             get_alarm_dicts()
         """
-        alarm_tup = self.get_alarms_as_dicts()
-        return self._format_alarms(alarm_tup)
+        alarm_tup = self.get_alarm_tup()
+        # self._dump_alarm_tup(alarm_tup)
+        return tuple(self._format_alarm(d) for d in alarm_tup)
 
-    def get_alarms_as_dicts(self):
-        """Get alarms as dict
+    def set_alarm(
+        self,
+        alarm_idx,
+        enabled_bool=None,
+        hour_int=None,
+        min_int=None,
+        *repeat_days_tup,
+    ):
+        """Set an alarm
+
+        This updates the alarm with any of the provided values that are not None, then
+        activates the alarm, so that it will fire at least once.
+
+        Args:
+            alarm_idx (int): alarm index (0, 1 or 2)
+            enabled_bool (bool or int 0/1): Only enabled alarms will fire. An alarm
+              that is set to fire once (repeat_days_tup is empty), will set enabled_bool
+              to False after the alarm has fired.
+            hour_int (int): Hour for alarm (0-23, 24-hour clock)
+            min_int (int): Minute for alarm (0-59)
+            repeat_days_tup (list of str): List of abbreviated days in which the alarm
+              will repeat. If no days are provided, the alarm is set to trigger only one
+              time.
+
+        Examples:
+            Set alarm 3 to activate at 9:30 (in the morning, always within 24 hours), and not repeat:
+                set-alarm 3 1 9 30
+
+            Set alarm 1 to activate at 22:45 on Tuesdays and Wednesdays until it's disabled:
+                set-alarm 1 22 45 tue wed
+        """
+        alarm_tup = self.get_alarm_tup()
+        alarm_dict = alarm_tup[alarm_idx]
+        alarm_dict["alarm_idx"] = alarm_idx
+
+        for s in ("enabled_bool", "hour_int", "min_int", "repeat_days_tup"):
+            v = locals()[s]
+            if v is not None:
+                alarm_dict[s] = v
+        alarm_dict["_unknown1_int"] = 0
+        if not repeat_days_tup:
+            # If the alarm is set not to repeat, the app sets the following values, which
+            # appear to be necessary in order for the alarm to fire once.
+            alarm_dict["_unknown1_int"] = 0x00
+            alarm_dict["_unknown2_int"] = 0x52
+            alarm_dict["_unknown3_int"] = 0x0B
+        else:
+            # If the alarm is set to repeat, the app sets the following values.
+            alarm_dict["_unknown1_int"] = 0x02
+            alarm_dict["_unknown2_int"] = 0x00
+            alarm_dict["_unknown3_int"] = 0x00
+        # self._dump_alarm_tup(alarm_tup)
+        self.set_alarm_dict(alarm_tup[alarm_idx])
+        self.get_alarm_tup()
+
+    def _dump_alarm_tup(self, alarm_tup):
+        log.debug("-" * 100)
+        log.debug("alarm_tup:")
+        for alarm_dict in alarm_tup:
+            alarm_str = pprint.pformat(alarm_dict)
+            for line in alarm_str.splitlines():
+                log.debug(f"  {line}")
+        log.debug("-" * 100)
+
+    def get_alarm_tup(self):
+        """Get all alarms
 
         The watch supports 3 individually configurable alarms. This returns the state
-        of the alarms as dict for further processing.
+        of all the alarms.
 
         Returns:
-             tup: A tuple of 3 dicts. Each dicts describes one alarm.
-             dict keys: enabled, hour, min, sec, days
+             alarm_tup: A tuple of 3 dicts. Each dicts describes one alarm. The
+                 dict_keys are alarm_idx, enabled, hour_int, min_int,
+                 repeat_days_tup
 
         See Also:
-            get_alarms()
+            set_alarm_tup()
+
+        Bytes:
+            0: Alarm index
+            1: Enabled (True/False, 0/1)
+            2: ?
+            3: Hour
+            4: Minute
+            5: ? (apparently not seconds)
+            6: ?
+            7: Repeat enabled/disabled for each day of the week
         """
+
+        def d_(a):
+            return {
+                "alarm_idx": a[0],
+                "enabled_bool": bool(a[1]),
+                "_unknown1_int": a[2],
+                "hour_int": a[3],
+                "min_int": a[4],
+                "_unknown2_int": a[5],
+                "_unknown3_int": a[6],
+                "repeat_days_tup": self._parse_alarm_repeat_days(a[7]),
+            }
+
         alarm_bytes = self._get_raw_cmd(0x21, None, "24B")
-        return tuple(
-            self._parse_alarm(alarm_bytes[i * 8 : (i + 1) * 8]) for i in range(3)
-        )
+        self._dump_alarm_bytes("RECV", alarm_bytes)
+        return tuple(d_(alarm_bytes[i * 8 : (i + 1) * 8]) for i in range(3))
 
-    def _parse_alarm(self, alarm_bytes):
-        """Alarm bytes:
+    def set_alarm_dict(self, alarm_dict):
+        """Set one alarm
 
-        0: Alarm index
-        1: Enabled/disabled (0/1)
-        2: ?
-        3: Hour
-        4: Minute
-        5: Probably second, but can't be set in app. Would it be honored by the watch?
-        6: ?
-        7: Enabled/disabled for each day of the week
+        The watch supports 3 individually configurable alarms. This overwrites the
+        alarm designated by alarm_idx in {alarm_dict}.
 
-        Example alarm 0: 00 00 02 09 01 00 00 71
+        To modify only some of the values in the alarm, e.g., to only toggle the alarm
+        from disabled to enabled, read out all
+        the alarms with get_alarm_tup(), modify the values in the alarm_dict for the
+        desired alarm, then write it back by passing it to this method.
 
         Args:
-            alarm_bytes (8 bytes)
+             alarm_dict: Dict describing an alarm. dict_keys are alarm_idx, enabled,
+               hour_int, min_int, repeat_days_tup
 
-        Returns: dict
+        See Also:
+            get_alarm_tup()
         """
-        return {
-            "alarm_idx": alarm_bytes[0],
-            "enabled": bool(alarm_bytes[1]),
-            "hour": alarm_bytes[3],
-            "min": alarm_bytes[4],
-            "sec": alarm_bytes[5],
-            "days": self._parse_alarm_days(alarm_bytes[7]),
-        }
+        d = alarm_dict
+        alarm_bytes = [
+            d["alarm_idx"],
+            d["enabled_bool"],
+            d["_unknown1_int"],
+            d["hour_int"],
+            d["min_int"],
+            d["_unknown2_int"],
+            d["_unknown3_int"],
+            self._make_alarm_repeat_days_int(d["repeat_days_tup"]),
+        ]
+        self._assert_alarm_dict(alarm_dict)
+        self._dump_alarm_bytes("SEND", alarm_bytes)
+        return self._send_raw_cmd(0x11, "8B", *alarm_bytes)
 
-    def _format_alarms(self, alarm_tup):
-        """Format alarms for display.
+    def _assert_alarm_dict(self, alarm_dict):
+        d = alarm_dict
+        if d["alarm_idx"] not in (0, 1, 2):
+            raise _uwatch2ble.WatchError(
+                f"alarm_idx must be 0, 1 or 2, not {d['alarm_idx']}"
+            )
+        if not 0 <= d["hour_int"] < 24:
+            raise _uwatch2ble.WatchError(
+                f"hour_int must be 0 - 23, not not {d['hour_int']}"
+            )
+        if not 0 <= d["min_int"] < 60:
+            raise _uwatch2ble.WatchError(
+                f"min_int must be 0 - 59, not not {d['min_int']}"
+            )
+
+    def _dump_alarm_bytes(self, msg, alarm_list):
+        def f(alarm_idx):
+            i = alarm_idx * 8
+            return " ".join(f"{v: 3d}" for v in alarm_list[i : i + 8])
+
+        log.error(f"{msg}: {f(0)}  {f(1)}  {f(2)}")
+
+    def _format_alarm(self, alarm_dict):
+        """Format alarm for display
 
         Args:
-            alarm_tup (tup):
-                Tup returned by get_alarms().
+            alarm_dict (dict): Desc
 
         Returns:
             Tup of 3 strings.
         """
-
-        def f_(d):
-            en_str = "ON " if d["enabled"] else "OFF"
-            if d["days"]:
-                day_str = f'Repeats: {" ".join(d["days"])}'
-            else:
-                day_str = "Once"
-            return f'Alarm {d["alarm_idx"]}: {d["hour"]:02d}:{d["min"]:02d}:{d["sec"]:02d} {en_str} {day_str}'
-
-        return tuple(f_(d) for d in alarm_tup)
-
-    def _parse_alarm_days(self, days_int):
-        # SUN, MON, TUE, WED, THU, FRI, SAT = range(7)
-        DAYS_TUP = "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
-        return tuple(
-            DAYS_TUP[day_idx] for day_idx in range(7) if days_int >> day_idx & 1
+        d = alarm_dict
+        if d["repeat_days_tup"]:
+            day_str = f'Repeats: {" ".join(d["repeat_days_tup"])}'
+        else:
+            day_str = "Once"
+        return (
+            f'Alarm {d["alarm_idx"]}: {d["hour_int"]:02d}:{d["min_int"]:02d} '
+            f'{"ON " if d["enabled_bool"] else "OFF"} '
+            f"{day_str}"
         )
+
+    def _parse_alarm_repeat_days(self, repeat_days_int):
+        """Parse the byte that holds the days in which an alarm should repeat
+
+        Returns:
+            tup of str: An ordered tuple of abbreviated day names for which the alarm is
+            set to repeat.
+        """
+        return tuple(
+            DAYS_TUP[day_idx] for day_idx in range(7) if repeat_days_int >> day_idx & 1
+        )
+
+    def _make_alarm_repeat_days_int(self, repeat_days_tup):
+        """Format a list of abbreviated day names to the byte that holds the days
+        in which an alarm should repeat.
+
+        Returns:
+            int: Value between 0 and 127 with bits set for the repeat days.
+        """
+        repeat_days_int = 0
+        days_lower_tup = tuple(s.lower() for s in DAYS_TUP)
+        for day_str in repeat_days_tup:
+            try:
+                day_idx = days_lower_tup.index(day_str.lower())
+            except ValueError:
+                raise _uwatch2ble.WatchError(
+                    f'Invalid abbreviated day "{day_str}". Must be one of: {", ".join(DAYS_TUP)} (case insensitive)'
+                )
+            repeat_days_int |= 1 << day_idx
+        return repeat_days_int
 
     # Time format
 

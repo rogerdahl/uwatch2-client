@@ -17,9 +17,10 @@ DAYS_TUP = "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"
 log = logging.getLogger(__name__)
 log.setLevel(0)
 
-# Commands that do not work or are not relevant in an interactive client
+# Commands that do not work or are not relevant in an interactive client.
 SKIP_COMMAND_LIST = [
-    "get_alarms_as_dicts",
+    "get_alarm_tup",
+    "set_alarm_tup",
 ]
 
 
@@ -51,7 +52,7 @@ def main():
         with uwatch2lib.Uwatch2(
             mac_addr=args.mac, scan_for_name=args.watch_name
         ) as uwatch2:
-            command_interface = CommandInterface(uwatch2)
+            command_interface = CommandInterface(uwatch2, args.debug)
             if args.command_list:
                 command_interface.run_commands(args.command_list)
             else:
@@ -68,7 +69,8 @@ def main():
 
 
 class CommandInterface(object):
-    def __init__(self, uwatch2):
+    def __init__(self, uwatch2, debug=False):
+        self._debug = debug
         self._uwatch2 = uwatch2
 
     def run_interactive(self):
@@ -85,6 +87,8 @@ class CommandInterface(object):
                     break
                 self._dispatch_cmd(cmd_str)
             except uwatch2lib.WatchError as e:
+                if self._debug:
+                    raise
                 log.error(e)
 
     def run_commands(self, command_list):
@@ -137,6 +141,8 @@ class CommandInterface(object):
                 try:
                     res = member_obj(self._uwatch2, *arg_tup)
                 except Exception as e:
+                    if self._debug:
+                        raise
                     raise uwatch2lib.WatchError(f"Command failed: {e}")
 
                 if member_name == "get_alarms":

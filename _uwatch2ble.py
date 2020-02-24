@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 import binascii
+import contextlib
 import functools
 import io
 import logging
 import multiprocessing
 import os
 import pprint
-import re
 import shlex
 import struct
 import uuid
@@ -87,7 +87,17 @@ class Uwatch2Ble(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._adapter.stop()
+        def f_(func_name):
+            log.debug(f'Calling "{func_name}" on adapter...')
+            try:
+                getattr(self._adapter, func_name)()
+            except Exception as e:
+                log.debug(f'Calling "{func_name}" on adapter raised {repr(e)}')
+            else:
+                log.debug(f'Calling "{func_name}" on adapter completed')
+        f_('stop')
+        f_('reset')
+        f_('kill')
 
     def _start(self):
         log.info("Starting...")
@@ -180,8 +190,8 @@ class Uwatch2Ble(object):
         """Send a query."""
         try:
             int_tup = list(map(int, arg_tup))
-        except ValueError:
-            raise WatchError(f"Arguments must be decimal numbers: {arg_tup}")
+        except TypeError:
+            raise WatchError(f"Arguments must be ints or decimal numbers: {arg_tup}")
 
         if pack_str:
             try:
@@ -254,9 +264,8 @@ class Uwatch2Ble(object):
     #
 
     def _get_hex_str(self, b):
-        hex_str = binascii.hexlify(b).decode("utf-8")
-        hex_str = re.sub(r"(..)", r"\1 ", hex_str)
-        return hex_str.strip()
+        # noinspection PyArgumentList
+        return binascii.hexlify(b, ' ').decode("ascii")
 
     def _get_bytes(self, hex_str):
         try:
@@ -266,7 +275,7 @@ class Uwatch2Ble(object):
 
     def _gen_header(self, payload_bytes):
         """Generate packet header."""
-        return self._get_bytes("fe ea 10") + struct.pack("b", len(payload_bytes) + 4)
+        return self._get_bytes("fe ea 10") + struct.pack("B", len(payload_bytes) + 4)
 
     def _get_response(self, cmd_key, unpack_str):
         """Get the response from a previously issued command of type {cmd_key}, and
@@ -439,7 +448,7 @@ class Uwatch2Ble(object):
             raise WatchError(
                 f"Expected bytes to start with new header (fe ea 10). Received: {self._get_hex_str(pkg_bytes)}"
             )
-        payload_byte_count = struct.unpack("b", pkg_bytes[3:4])[0] - 4
+        payload_byte_count = struct.unpack("B", pkg_bytes[3:4])[0] - 4
         log.debug(f"Received valid header for {payload_byte_count} payload bytes")
         return payload_byte_count
 
