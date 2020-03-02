@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import binascii
-import contextlib
 import functools
 import io
 import logging
@@ -13,6 +12,7 @@ import struct
 import uuid
 
 import pygatt
+import pygatt.exceptions
 
 log = logging.getLogger(__name__)
 
@@ -47,8 +47,6 @@ class Uwatch2Ble(object):
         # We take the liberty of tweaking chatty log output from pygatt even though
         # libraries generally shouldn't touch the logging config.
         # logging_level = logging.DEBUG if debug else logging.WARNING
-        # logging.getLogger("pygatt.backends.gatttool.gatttool").setLevel(logging_level)
-        # logging.getLogger("pygatt.device").setLevel(logging_level)
         if squelch_pygatt:
             logging.getLogger("pygatt").setLevel(logging.WARNING)
 
@@ -87,18 +85,14 @@ class Uwatch2Ble(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        def f_(func_name):
-            log.debug(f'Calling "{func_name}" on adapter...')
-            try:
-                getattr(self._adapter, func_name)()
-            except Exception as e:
-                log.debug(f'Calling "{func_name}" on adapter raised {repr(e)}')
-            else:
-                log.debug(f'Calling "{func_name}" on adapter completed')
-
-        f_("stop")
-        f_("reset")
-        f_("kill")
+        if exc_val is not None:
+            log.error(f"Uwatch2 context manager exception: {repr(exc_val)}")
+            self.recover()
+        try:
+            self._adapter.stop()
+        except Exception as e:
+            log.error(f"adapter.stop() failed: {repr(e)}")
+            self.recover()
 
     def _start(self):
         log.info("Starting...")
@@ -112,6 +106,22 @@ class Uwatch2Ble(object):
         self._subscribe(self.ACCELEROMETER_UUID)
         self._async_response_handle = self._device.get_handle(self.ASYNC_RESPONSE_UUID)
         self._accelerometer_handle = self._device.get_handle(self.ACCELEROMETER_UUID)
+
+    def recover(self):
+        """Attempt to get Bluez into a usable state again after errors."""
+        def f_(func):
+            log.debug(f'Calling "{func}" on adapter...')
+            try:
+                func()
+            except Exception as e:
+                log.debug(f'Calling "{func}" on adapter raised {repr(e)}')
+            else:
+                log.debug(f'Calling "{func}" on adapter completed')
+
+        f_(functools.partial(self._adapter.disconnect, self._adapter))
+        f_(self._adapter.stop)
+        f_(self._adapter.reset)
+        f_(self._adapter.kill)
 
     def _set_mac_addr(self):
         if self._mac_addr:

@@ -1,6 +1,4 @@
-## Linux library and client for the UMIDIGI Uwatch2 smart watch (Python)
-
-> **NOTE**: For Linux only.
+## Python library and client for the UMIDIGI Uwatch2 smart watch (Linux )
 
 Based on [reverse engineering of the protocol by @kabbi](https://gist.github.com/kabbi/854a541c1a32e15fb0dfa3338f4ee4a9).
 
@@ -55,7 +53,7 @@ Use the `--debug` command line switch to get details on the protocol.
 
 Automatically setting the MAC address by using a BLE scan is also supported. Since the MAC address for the watch is easily available by long tap on the main watch screen, this procedure is not typically necessary. It is also slow and unreliable.
 
-By default, scanning with gatttool requires root privileges. Enable regular users to perform BLE scans with:
+By default, scanning with gatttool requires root. Enable regular users to perform BLE scans with:
 
     $ setcap 'cap_net_raw,cap_net_admin+eip' `which hcitool`
     
